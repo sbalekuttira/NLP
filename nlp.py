@@ -1,7 +1,7 @@
 
 # coding: utf-8
 
-# In[261]:
+# In[1]:
 
 
 import gzip
@@ -24,7 +24,7 @@ with gzip.open('atis.small.pkl.gz', 'rb') as f:
     
 
 
-# In[262]:
+# In[8]:
 
 
 #print type(idx2label)
@@ -32,18 +32,18 @@ with gzip.open('atis.small.pkl.gz', 'rb') as f:
  #'''
   #  To have a look what the original data look like, commnet them before your submission
    # '''
-print test_lex[0], map(lambda t: idx2word[t], test_lex[0])
-print test_y[0], map(lambda t: idx2label[t], test_y[0])
+print train_lex[1], map(lambda t: idx2word[t], train_lex[1])
+print train_y[1], map(lambda t: idx2label[t], train_y[1])
 
 
-# In[263]:
+# In[3]:
 
 
 #initilise all the vectors with random numbers
 #added extra POS tag 'start' and 'end'
 
-word_vector_size=3
-tag_vector_size=3
+word_vector_size=300
+tag_vector_size=100
 word_vectors=np.random.rand(len(idx2word),word_vector_size)
 tag_vectors=np.random.rand(len(idx2label),tag_vector_size)
 start_tag=np.random.rand(1,tag_vector_size)
@@ -54,27 +54,28 @@ input_embed=[]
 input_embedding_labels=[]
 
 
-# In[264]:
+# In[4]:
 
 
-print word_vectors[554]
-print word_vectors[104]
-print tag_vectors[126]
-print tag_vectors[123]
-print tag_vectors[2]
-print (start_tag)
+#print word_vectors[554]
+#print word_vectors[104]
+#print tag_vectors[126]
+#print tag_vectors[123]
+#print tag_vectors[2]
+#print (start_tag)
 #print input_embedding.shape
 
 
-# In[265]:
+# In[5]:
 
 
+count=0
 for i in range(len(train_lex)):
     for j in range (len(train_lex[i])):
-        
+        count=count+1
         current_word_id=train_lex[i][j]
         current_word_label=train_y[i][j]
-        input_embedding_labels.append(tag_vectors[current_word_label]) 
+        input_embedding_labels.append(tag_labels_embedding[current_word_label]) 
         if(j==0):
                 input_tag_embd=start_tag
                 input_word_embd=word_vectors[current_word_id]
@@ -82,7 +83,7 @@ for i in range(len(train_lex)):
                 input_word_embd=input_word_embd.reshape(1,word_vector_size)
                 input_embed.append(np.concatenate([input_word_embd,input_tag_embd],axis=1))
                 
-        else :
+        elif (j>0) :
             input_tag_embd=tag_vectors[train_y[i][j-1]]
             input_word_embd=word_vectors[current_word_id]
             input_word_embd=input_word_embd.reshape(1,word_vector_size)
@@ -92,7 +93,13 @@ for i in range(len(train_lex)):
   
 
 
-# In[266]:
+# In[6]:
+
+
+print count
+
+
+# In[15]:
 
 
 input_embed=np.asarray(input_embed,dtype=np.float32)
@@ -104,8 +111,9 @@ for i in range (input_embed.shape[0]):
         input_embedding[i][j]=input_embed[i][0][j]
 
 
-# In[267]:
+# In[17]:
 
 
 print input_embedding.shape
+print input_embedding_labels.shape
 

@@ -1,16 +1,17 @@
 
 # coding: utf-8
 
-# In[131]:
+# In[199]:
 
 
 import torch
 from torch import autograd, nn
 import numpy as np
 import torch.nn.functional as F
+import torch.nn as nn
 
 
-# In[132]:
+# In[200]:
 
 
 batch_size=5
@@ -19,31 +20,26 @@ input_neurons=6
 hidden_neurons=10
 output_neurons=5
 
+learning_r=0.001
 
 
 
 input_num = np.random.rand(5,6)
 input_num=torch.from_numpy(np.array(input_num,dtype=np.float32))
 
-input_torch=autograd.Variable(input_num)
+input=autograd.Variable(input_num)
 
-
-target_num = np.zeros(shape=(5,5))
+target_num =np.random.rand(5,5)
 np.fill_diagonal(target_num, 1)
+#target_nnum=np.array(target_num)
 target_num=torch.from_numpy(np.array(target_num,dtype=np.float32))
 
-target_torch=autograd.Variable((target_num).long())
+target=autograd.Variable((target_num))
+
+#target = autograd.Variable((torch.rand(batch_size) * output_neurons).long())
 
 
-# In[133]:
-
-
-#print input_num
-#print input_torch
-print target_torch
-
-
-# In[134]:
+# In[201]:
 
 
 class Net(nn.Module):
@@ -63,26 +59,18 @@ class Net(nn.Module):
 net = Net(input_neurons, hidden_neurons, output_neurons)
 
 
-# In[135]:
+# In[202]:
 
 
-output=net(input_torch)
+opt=torch.optim.Adam(params=net.parameters(),lr=learning_r)
 
-
-# In[136]:
-
-
-print output
-
-
-# In[137]:
-
-
-print target_torch
-
-
-# In[138]:
-
-
-loss= F.nll_loss(output,target_torch)
+for epoch in range(100):
+    output=net(input)
+    loss = nn.MSELoss()
+    loss_is=loss(output,target)
+    print loss_is
+    net.zero_grad()
+    loss_is.backward()
+    opt.step()
+    
 
