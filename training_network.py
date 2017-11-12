@@ -1,7 +1,7 @@
 
 # coding: utf-8
 
-# In[15]:
+# In[1]:
 
 
 import torch
@@ -16,7 +16,7 @@ import argparse
 import sys
 
 
-# In[16]:
+# In[2]:
 
 
 with gzip.open('atis.small.pkl.gz', 'rb') as f:
@@ -30,14 +30,17 @@ with gzip.open('atis.small.pkl.gz', 'rb') as f:
     idx2word  = dict((k,v) for v,k in dicts['words2idx'].iteritems())
 
 
-# In[17]:
+# In[3]:
 
 
 word_vector_size=300
-tag_vector_size=127
+tag_vector_size=128
 word_vectors=np.random.rand(len(idx2word),word_vector_size)
-tag_vectors=np.random.rand(len(idx2label),tag_vector_size)
-start_tag=np.random.rand(1,tag_vector_size)
+#tag_vectors=np.random.rand(len(idx2label),tag_vector_size)
+tag_vectors=np.zeros(shape=(len(idx2label)+1,len(idx2label)+1))
+np.fill_diagonal(tag_vectors, 1)
+#start_tag=np.random.rand(1,tag_vector_size)
+start_tag=tag_vectors[127]
 end_tag=np.random.rand(1,tag_vector_size)
 tag_labels_embedding=np.zeros(shape=(len(idx2label),len(idx2label)))
 np.fill_diagonal(tag_labels_embedding, 1)
@@ -45,15 +48,22 @@ input_embed=[]
 input_embedding_labels=[]
 
 
-# In[18]:
+# In[4]:
 
 
-print word_vectors
+#print tag_vectors[127]
+#print start_tag
+
+
+# In[5]:
+
+
+#print word_vectors
 print tag_vectors.shape
-print tag_labels_embedding
+#print tag_labels_embedding
 
 
-# In[19]:
+# In[6]:
 
 
 count=0
@@ -81,7 +91,7 @@ for i in range(len(train_lex)):
         
 
 
-# In[20]:
+# In[7]:
 
 
 input_embed=np.asarray(input_embed,dtype=np.float32)
@@ -96,20 +106,20 @@ for i in range (input_embedding.shape[0]):
 print input_embedding.shape
 
 
-# In[21]:
+# In[8]:
 
 
-print input_embedding[0]
-print input_embedding_labels[0]
+#print input_embedding[0]
+#print input_embedding_labels[0]
 
 
-# In[22]:
+# In[9]:
 
 
 #batch_size=5
 input_neurons=input_embedding.shape[1]
 
-hidden_neurons=40
+hidden_neurons=140
 output_neurons=input_embedding_labels.shape[1]
 
 learning_r=0.01
@@ -128,19 +138,19 @@ target_num=torch.from_numpy(np.array(input_embedding_labels,dtype=np.float32))
 target=autograd.Variable((target_num))
 
 
-# In[23]:
+# In[10]:
 
 
 print len(target)
 
 
-# In[24]:
+# In[11]:
 
 
-print target
+#print target
 
 
-# In[25]:
+# In[12]:
 
 
 class Net(nn.Module):
@@ -160,7 +170,7 @@ class Net(nn.Module):
 net = Net(input_neurons, hidden_neurons, output_neurons)
 
 
-# In[26]:
+# In[25]:
 
 
 def correct(output , target):
@@ -189,17 +199,17 @@ def correct(output , target):
     print len(output)
 
 
-# In[27]:
+# In[26]:
 
 
 opt=torch.optim.Adam(params=net.parameters(),lr=learning_r)
 
-for epoch in range(40):
+for epoch in range(2000):
     print epoch
     output=net(input)
     loss = nn.MSELoss()
     loss_is=loss(output,target)
-    #print loss_is
+   # print loss_is
     correct(output.data,target.data)
     net.zero_grad()
     loss_is.backward()
@@ -207,20 +217,35 @@ for epoch in range(40):
     
 
 
-# In[ ]:
+# In[42]:
 
 
-print input.data[0]
+def maxs(output):
+    maxs=output[0]
+    max_id=0
+    for i in range(127):
+        if (output[i] > maxs):
+            maxs=output[i]
+            maxs_id=i
+    print max_id
+        
 
 
-# In[ ]:
+# In[43]:
 
 
-print target.data
-
-
-# In[ ]:
-
-
-print output[0][1]
+for i in range (1):
+    for j in range (1):
+        current_word_id=test_lex[i][j]
+        print current_word_id
+        for k in range ():
+                input_tag_embed=tag_vectors[k]
+                input_word_embed=word_vectors[current_word_id]
+                input_embedding=np.concatenate([input_word_embed,input_tag_embed],axis=0)
+               # print input_embedding
+                input_embedding=torch.from_numpy(np.array(input_embedding,dtype=np.float32))
+                input=autograd.Variable(input_embedding,requires_grad=False)
+                output=net(input)
+                maxs(output.data)
+                print test_y[i][j]
 
